@@ -1,0 +1,167 @@
+<html>
+<head>
+<script src="gencc.js" type="text/javascript"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+</head>
+<body>
+<h3>Card Generator</h3>
+<script>
+
+
+var visafunction = function(cardcount){
+var visa = credit_card_number(visaPrefixList, 16, cardcount); 
+//var splitArray = visa.split(',');
+writetofile(visa,cardcount,"visacards");
+};
+
+var amexfunction = function(cardcount){
+  var amex = credit_card_number(amexPrefixList, 15, cardcount); 
+writetofile(amex,cardcount,"amexcards");
+};
+
+var masterfunction = function(cardcount){
+  var mastercard = credit_card_number(mastercardPrefixList, 16, cardcount); 
+writetofile(mastercard,cardcount,"mastercards");
+};
+
+var customcardfunction = function(cardcount,customlist){
+ var lines = customlist.split(/\n/);
+  var output = [];
+  var outputText = [];
+  for (var i = 0; i < lines.length; i++) {
+    // only push this line if it contains a non whitespace character.
+    if (/\S/.test(lines[i])) {
+      outputText.push('"' + $.trim(lines[i]) + '"');
+      output.push($.trim(lines[i]));
+    }
+  }
+
+  var customcard = credit_card_number(output, 16, cardcount); 
+writetofile(customcard,cardcount,"customcards");
+};
+
+var myFunction = function(){
+    
+var c = document.getElementById("NumCards").value;
+var e = document.getElementById("selectID");
+var ed = document.getElementById("custom").value;
+if(c=="")
+alert("enter number of cards");
+else
+{
+var strUser =e.options[e.selectedIndex].value;
+if(strUser=="visa"){
+visafunction(c);}
+else if(strUser=="master")
+masterfunction(c);
+else if(strUser=="amex")
+amexfunction(c);
+else if(strUser=="custom")
+{
+if(ed=="")
+alert("enter custom value");
+
+else
+customcardfunction(c,ed);
+}}};
+var lines="";
+var writetofile = function(textToSave,count,filename ){
+//var textToSave = 'this is a test';
+for(var i=0;i<count;i++){
+lines+=('\r\n' + textToSave[i]);
+
+}
+
+var hiddenElement = document.createElement('a');
+
+hiddenElement.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(lines);
+//hiddenElement.data='text/plain;charset=utf-8,
+hiddenElement.target = '_blank';
+hiddenElement.download = filename+'.txt';
+lines=null;
+hiddenElement.click();
+
+//makeTextFile("red \n this");
+};
+var textFile = null;
+  makeTextFile = function (text) {
+    var data = new Blob([text], {type: 'text/plain'});
+
+    // If we are replacing a previously generated file we need to
+    // manually revoke the object URL to avoid memory leaks.
+    if (textFile !== null) {
+      window.URL.revokeObjectURL(textFile);
+    }
+
+    textFile = window.URL.createObjectURL(data);
+
+    // returns a URL you can use as a href
+    return textFile;
+  };
+
+var customCard = function(){
+var ee = document.getElementById("selectID");
+var estrUser =ee.options[ee.selectedIndex].value;
+  if ((estrUser)=="custom"){
+    document.getElementById('custom').style.display = "block";
+     document.getElementById('cust').style.display = "block";
+  }
+  else
+  {
+   document.getElementById('custom').style.display = "none";
+      document.getElementById('cust').style.display = "none";
+}
+
+};
+
+function valid_credit_card(value) {
+  // accept only digits, dashes or spaces
+
+	if (/[^0-9-\s]+/.test(value)) return false;
+
+	// The Luhn Algorithm. It's so pretty.
+	var nCheck = 0, nDigit = 0, bEven = false;
+	value = value.replace(/\D/g, "");
+
+	for (var n = value.length - 1; n >= 0; n--) {
+		var cDigit = value.charAt(n),
+			  nDigit = parseInt(cDigit, 10);
+
+		if (bEven) {
+			if ((nDigit *= 2) > 9) nDigit -= 9;
+		}
+
+		nCheck += nDigit;
+		bEven = !bEven;
+	}
+
+	return (nCheck % 10) == 0;
+};
+var luhncheck=function()
+{
+var value = document.getElementById("CardNo").value;
+if((valid_credit_card(value)==true)){
+  alert("Luhn Check Passed");}
+else
+{
+  alert("Luhn Check Failed");
+}
+};
+</script>
+Number of Cards: <input type="text" name="NumCards" id="NumCards"><br>
+<label id="cust" name=cust value="cust" style="display:none">custom Prefix</label>
+ <textarea name="custom" id="custom" cols="40" rows="5" style="display:none"></textarea>
+<br>
+<select id="selectID" name="selectID" onchange="customCard()">
+  <option value="visa">visa</option>
+  <option value="master">master</option>
+  <option value="amex">amex</option>
+      <option value="custom">custom</option>
+</select>
+<button onclick="myFunction()">Download</button>
+<h3>Luhn Check</h3>
+Card Number: <input type="text" name="CardNo" id="CardNo"><br>
+<button onclick="luhncheck()">Verify</button>
+
+</body>
+</html>
